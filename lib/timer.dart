@@ -3,6 +3,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:percent_indicator/circular_percent_indicator.dart';
 
 class TimerSet extends StatefulWidget {
   const TimerSet({super.key});
@@ -12,13 +13,20 @@ class TimerSet extends StatefulWidget {
 }
 
 class _TimerState extends State<TimerSet> {
-  Duration duration = Duration(seconds: 0);
+  Duration duration = Duration(minutes: 25);
   Timer? repeatedFunction;
   countDown() {
-    repeatedFunction = Timer.periodic(Duration(milliseconds: 1), (timer) {
+    repeatedFunction = Timer.periodic(Duration(seconds: 1), (timer) {
       setState(() {
-        int newScond = duration.inSeconds + 1;
+        int newScond = duration.inSeconds - 1;
         duration = Duration(seconds: newScond);
+        if (duration.inSeconds == 0) {
+          repeatedFunction!.cancel();
+          setState(() {
+            duration = Duration(minutes: 25);
+            isrunning = false;
+          });
+        }
       });
     });
   }
@@ -27,6 +35,15 @@ class _TimerState extends State<TimerSet> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          "promdorApp",
+          style: TextStyle(
+              color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+        centerTitle: true,
+        backgroundColor: Colors.grey,
+      ),
       backgroundColor: Colors.blueGrey,
       body: Container(
         height: double.infinity,
@@ -37,91 +54,24 @@ class _TimerState extends State<TimerSet> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Column(
-                  children: [
-                    Container(
-                      margin: EdgeInsets.only(bottom: 22),
-                      padding: EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(18),
-                      ),
-                      child: Text(
-                        duration.inHours.toString().padLeft(2, "0"),
-                        style: TextStyle(fontSize: 77),
-                      ),
-                    ),
-                    Text("Hour",
-                        style: TextStyle(
-                            fontSize: 25,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white)),
-                    SizedBox(
-                      height: 10,
-                    ),
-                  ],
-                ),
-                SizedBox(
-                  width: 10,
-                ),
-                Column(
-                  children: [
-                    Container(
-                      margin: EdgeInsets.only(bottom: 22),
-                      padding: EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(18),
-                      ),
-                      child: Text(
-                        duration.inMinutes
-                            .remainder(60)
-                            .toString()
-                            .padLeft(2, "0"),
-                        style: TextStyle(fontSize: 77),
-                      ),
-                    ),
-                    Text("minutes",
-                        style: TextStyle(
-                            fontSize: 25,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white)),
-                    SizedBox(
-                      height: 10,
-                    ),
-                  ],
-                ),
-                SizedBox(
-                  width: 10,
-                ),
-                Column(
-                  children: [
-                    Container(
-                      margin: EdgeInsets.only(bottom: 22),
-                      padding: EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(18),
-                      ),
-                      child: Text(
-                        duration.inSeconds
-                            .remainder(60)
-                            .toString()
-                            .padLeft(2, "0"),
-                        style: TextStyle(fontSize: 77),
-                      ),
-                    ),
-                    Text("Seconds",
-                        style: TextStyle(
-                            fontSize: 25,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white)),
-                    SizedBox(
-                      height: 10,
-                    ),
-                  ],
+                CircularPercentIndicator(
+                  progressColor: Colors.red,
+                  backgroundColor: Colors.white,
+                  animation: true,
+                  lineWidth: 10,
+                  animationDuration: 1000,
+                  animateFromLastPercent: true,
+                  percent: duration.inMinutes / 25,
+                  radius: 100,
+                  center: Text(
+                    "${duration.inMinutes.remainder(60).toString().padLeft(2, "0")}:${duration.inSeconds.remainder(60).toString().padLeft(2, "0")}",
+                    style: TextStyle(fontSize: 50, color: Colors.white),
+                  ),
                 ),
               ],
+            ),
+            SizedBox(
+              height: 30,
             ),
             isrunning
                 ? Row(
@@ -129,15 +79,14 @@ class _TimerState extends State<TimerSet> {
                     children: [
                       ElevatedButton(
                           onPressed: () {
-                            
-                            if(repeatedFunction!.isActive){
+                            if (repeatedFunction!.isActive) {
                               repeatedFunction!.cancel();
-                            }else{
-                                 countDown();
+                            } else {
+                              countDown();
                             }
-                            
                           },
-                          child: Text (repeatedFunction!.isActive ? "stop" : "resume",
+                          child: Text(
+                              repeatedFunction!.isActive ? "stop" : "resume",
                               style: TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
@@ -149,7 +98,7 @@ class _TimerState extends State<TimerSet> {
                           onPressed: () {
                             repeatedFunction!.cancel();
                             setState(() {
-                              duration = Duration(seconds: 0);
+                              duration = Duration(minutes: 25);
                               isrunning = false;
                             });
                           },
